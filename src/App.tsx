@@ -1,5 +1,5 @@
 import './App.css'
-import { TrainingPage } from './pages/training-page';
+import { TrainingPage } from '@/pages/training-page/training-page.tsx';
 
 function App() {
 

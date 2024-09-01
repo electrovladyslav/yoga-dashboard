@@ -11,4 +11,9 @@
     justify-content: space-evenly;
     border: 2px dashed black;
     border-radius: 20px;
+    box-sizing: border-box;
+}
+
+.section:last-child {
+    border-style: solid;
 }

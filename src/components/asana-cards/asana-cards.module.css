@@ -1,0 +1,25 @@
+.container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.card {
+    width: 150px;
+    height: 200px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    place-items: center;
+    border: 2px solid black;
+    border-radius: 20px;
+    box-sizing: border-box;
+}
+
+.title {
+    margin: 0;
+}
+
+.subtitle {
+    margin: 0;
+}
