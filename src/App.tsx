@@ -1,12 +1,11 @@
-import cardImage from '/card-stub-image.jpeg'
 import './App.css'
+import { TrainingPage } from './pages/training-page';
 
 function App() {
 
   return (
     <>
-      <h1>Yoga dashboard</h1>
-      <img src={cardImage} className="logo" alt="Vite logo" />
+      <TrainingPage trainingDate={new Date()} />
     </>
   )
 }

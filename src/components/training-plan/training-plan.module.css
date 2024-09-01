@@ -1,0 +1,14 @@
+.container {
+    display: flex;
+    gap: 10px;
+}
+
+.section {
+    width: 150px;
+    height: 200px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-evenly;
+    border: 2px dashed black;
+    border-radius: 20px;
+}
