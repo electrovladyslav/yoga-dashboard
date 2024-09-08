@@ -8,7 +8,7 @@
     border: 2px solid black;
     border-radius: 20px;
     box-sizing: border-box;
-    background-color: aliceblue;
+    background-color: darkcyan;
     cursor: grab;
 }
 
@@ -22,4 +22,11 @@
 
 .subtitle {
     margin: 0;
+}
+
+@media (prefers-color-scheme: light) {
+    .card {
+        background-color: aliceblue;
+    }
+
 }
