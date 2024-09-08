@@ -1,12 +1,6 @@
-.container {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
 .card {
-    width: 150px;
-    height: 200px;
+    width: 200px;
+    height: 250px;
     padding: 10px;
     display: flex;
     flex-direction: column;
