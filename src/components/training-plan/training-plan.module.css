@@ -1,8 +1,9 @@
-.section {
-    width: 150px;
-    height: 200px;
+.step {
+    width: 250px;
+    height: 300px;
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
+    align-items: center;
     justify-content: space-evenly;
     border: 2px dashed black;
     border-radius: 20px;

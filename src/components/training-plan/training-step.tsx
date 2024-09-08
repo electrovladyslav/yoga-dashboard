@@ -1,7 +1,23 @@
 import styles from './training-plan.module.css';
+import {useDroppable} from '@dnd-kit/core';
 
-export const TrainingStep = ({step}: {step: string}) =>  (
-        <article key={step} className={styles.section}>
-          <h2>{step}</h2>
-        </article>
+interface TrainingStepProps {
+  step: string;
+  children: React.ReactNode;
+}
+
+export const TrainingStep = ({step, children}: TrainingStepProps) =>  {
+  const {isOver, setNodeRef} = useDroppable({
+    id: `${step}`,
+  });
+  const style = {
+    backgroundColor: isOver ? 'limegreen' : undefined,
+  };
+
+  return (
+    <article className={styles.step} ref={setNodeRef} style={style}>
+      <h2>{step}</h2>
+      {children}
+    </article>
   )
+}
