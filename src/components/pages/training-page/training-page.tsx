@@ -1,9 +1,10 @@
-import { formatDate } from "@/utils/date.utils.ts";
-import { TrainingStep } from '@/components/training-plan/training-step.tsx';
-import { AsanaCard } from '@/components/asana-card/asana-card.tsx';
+'use client';
+import { formatDate } from "@/utils/date.utils";
+import { TrainingStep } from '@/components/training-plan/training-step';
+import { AsanaCard } from '@/components/asana-card/asana-card';
 import styles from './training-page.module.css';
-import { type Asana, ASANAS } from '@/constants/asana.ts';
-import { STEPS } from '@/constants/steps.ts';
+import { type Asana, ASANAS } from '@/constants/asana';
+import { STEPS } from '@/constants/steps';
 import { DndContext, type UniqueIdentifier } from '@dnd-kit/core';
 import { useState } from 'react';
 import type { DragEndEvent } from '@dnd-kit/core/dist/types';
