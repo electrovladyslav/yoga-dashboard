@@ -5,16 +5,19 @@ import { AsanaCard } from '@/components/asana-card/asana-card';
 import styles from './training-page.module.css';
 import { type Asana, ASANAS } from '@/constants/asana';
 import { STEPS } from '@/constants/steps';
-import { DndContext, type UniqueIdentifier } from '@dnd-kit/core';
-import { useState } from 'react';
+import { DndContext } from '@dnd-kit/core';
+import { type ChangeEvent, useState } from 'react';
 import type { DragEndEvent } from '@dnd-kit/core/dist/types';
+import type { TrainingSteps } from '@/models/training.model';
+import { saveTraining } from '@/services/trainig.service';
 
 interface TrainingPageProps {
-  trainingDate: Date;
+  trainingDate?: Date;
 }
 
-export const TrainingPage = ({trainingDate}: TrainingPageProps) => {
-  const [parents, setParents] = useState<Record<string, UniqueIdentifier>>({});
+export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProps) => {
+  const [parents, setParents] = useState<TrainingSteps>({});
+  const [trainingDate, setTrainingDate] = useState(propsTrainingDate || new Date());
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -42,10 +45,24 @@ export const TrainingPage = ({trainingDate}: TrainingPageProps) => {
     return isAsanaInStep ? null :  <AsanaCard {...asana}  key={asana.id} />
   }
 
+  function onDateChange(event: ChangeEvent<HTMLInputElement>) {
+    setTrainingDate(new Date(event.target.value));
+  }
+
+  function onSaveClick() {
+    console.log('Save training: ', trainingDate, parents);
+    saveTraining({date: trainingDate.toISOString(), steps: parents});
+  }
+
   return (
     <DndContext  onDragEnd={handleDragEnd}>
       <main className={styles.main}>
-        <h1>Training {formatDate(trainingDate)}</h1>
+
+        <h1>
+          <span>Training </span>
+          <input type="date" value={formatDate(trainingDate)} onChange={onDateChange} className={styles.dateInput}/>
+          <button className={styles.saveButton} onClick={onSaveClick}>Save</button>
+        </h1>
 
         <section className={styles.container}>
           {STEPS.map((step) => (
