@@ -1,6 +1,7 @@
 import styles from './asana-card.module.css';
 import type { Asana } from '@/constants/asana.ts';
 import {useDraggable} from '@dnd-kit/core';
+import Image from 'next/image';
 
 export const AsanaCard = (asana: Asana) => {
   const {attributes, listeners, setNodeRef, transform} = useDraggable({
@@ -12,7 +13,7 @@ export const AsanaCard = (asana: Asana) => {
 
   return (
         <article className={styles.card} ref={setNodeRef} style={style} {...listeners} {...attributes}>
-          <img
+          <Image
             src={asana.url_svg}
             alt={asana.sanskrit_name}
             width='80'

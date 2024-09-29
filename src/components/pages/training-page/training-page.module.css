@@ -4,9 +4,21 @@
     row-gap: 20px;
 }
 
+.dateInput {
+    width: 350px;
+}
+
+.saveButton {
+    margin-left: 20px;
+    padding: 10px 15px;
+    border-radius: 15px;
+}
+
 .container {
     display: flex;
     gap: 10px;
+    /*TODO temp*/
+    flex-wrap: wrap;
 }
 
 .asanasContainer {
