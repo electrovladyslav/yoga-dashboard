@@ -6,10 +6,10 @@ import styles from './training-page.module.css';
 import { type Asana, ASANAS } from '@/constants/asana';
 import { STEPS } from '@/constants/steps';
 import { DndContext } from '@dnd-kit/core';
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 import type { DragEndEvent } from '@dnd-kit/core/dist/types';
 import type { TrainingSteps } from '@/models/training.model';
-import { saveTraining } from '@/services/trainig.service';
+import { getTrainings, saveTraining } from '@/services/trainig.service';
 
 interface TrainingPageProps {
   trainingDate?: Date;
@@ -18,6 +18,19 @@ interface TrainingPageProps {
 export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProps) => {
   const [parents, setParents] = useState<TrainingSteps>({});
   const [trainingDate, setTrainingDate] = useState(propsTrainingDate || new Date());
+
+  useEffect(() => {
+    if (propsTrainingDate) {
+     setTrainingFromTheDate(propsTrainingDate);
+    }
+  }, [propsTrainingDate, getTrainings, setTrainingDate, setTrainingFromTheDate]);
+
+  function setTrainingFromTheDate(date: Date) {
+    const storedTrainings = getTrainings(formatDate(date));
+    if (storedTrainings) {
+      setParents(storedTrainings.steps);
+    }
+  }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -46,12 +59,13 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
   }
 
   function onDateChange(event: ChangeEvent<HTMLInputElement>) {
-    setTrainingDate(new Date(event.target.value));
+    const date = new Date(event.target.value);
+    setTrainingFromTheDate(date);
+    setTrainingDate(date);
   }
 
   function onSaveClick() {
-    console.log('Save training: ', trainingDate, parents);
-    saveTraining({date: trainingDate.toISOString(), steps: parents});
+    saveTraining({date: formatDate(trainingDate), steps: parents});
   }
 
   return (
