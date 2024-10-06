@@ -1,52 +1,58 @@
 'use client';
 import { formatDate } from "@/utils/date.utils";
-import { TrainingStep } from '@/components/training-plan/training-step';
+import { TrainingStep } from '@/components/training-step/training-step';
 import { AsanaCard } from '@/components/asana-card/asana-card';
 import styles from './training-page.module.css';
 import { type Asana, ASANAS } from '@/constants/asana';
 import { STEPS } from '@/constants/steps';
-import { DndContext } from '@dnd-kit/core';
-import { type ChangeEvent, useEffect, useState } from 'react';
-import type { DragEndEvent } from '@dnd-kit/core/dist/types';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { type ChangeEvent, useCallback, useEffect, useState } from 'react';
 import type { TrainingSteps } from '@/models/training.model';
-import { getTrainings, saveTraining } from '@/services/trainig.service';
+import { getTrainings, saveTraining } from '@/services/training.service';
 
 interface TrainingPageProps {
   trainingDate?: Date;
 }
 
 export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProps) => {
-  const [parents, setParents] = useState<TrainingSteps>({});
+  const [trainingSteps, setTrainingSteps] = useState<TrainingSteps>({});
   const [trainingDate, setTrainingDate] = useState(propsTrainingDate || new Date());
+
+  const setTrainingFromTheDate = useCallback((date: Date) => {
+    const storedTrainings = getTrainings(formatDate(date));
+    if (storedTrainings) {
+      setTrainingSteps(storedTrainings.steps);
+    }
+  }, []);
 
   useEffect(() => {
     if (propsTrainingDate) {
-     setTrainingFromTheDate(propsTrainingDate);
+      setTrainingFromTheDate(propsTrainingDate);
     }
-  }, [propsTrainingDate, getTrainings, setTrainingDate, setTrainingFromTheDate]);
-
-  function setTrainingFromTheDate(date: Date) {
-    const storedTrainings = getTrainings(formatDate(date));
-    if (storedTrainings) {
-      setParents(storedTrainings.steps);
-    }
-  }
+  }, [propsTrainingDate, setTrainingFromTheDate]);
 
   function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
+    const { active: draggingAsanaCard, over: overTrainingStep } = event;
 
-    if (over) {
-      setParents((prev) => ({
-        ...prev,
-        [over.id]: active.id,
+    if (overTrainingStep) {
+      setTrainingSteps((prevTrainingSteps) => ({
+        ...prevTrainingSteps,
+        [overTrainingStep.id]:  [...(prevTrainingSteps[overTrainingStep.id] || []), draggingAsanaCard.id],
       }));
+    } else {
+      // remove from prev holding steps
+      const newTrainingSteps = {...trainingSteps};
+      Object.keys(newTrainingSteps).forEach((step) => {
+        newTrainingSteps[step] = newTrainingSteps[step].filter((asana) => asana !== draggingAsanaCard.id);
+      });
+      setTrainingSteps(newTrainingSteps);
     }
   }
 
   function getDraggableChildren(step: string) {
-    const currentParentChildrenName = parents[step];
+    const currentParentChildrenName = trainingSteps[step];
     if (currentParentChildrenName) {
-      return ASANAS.filter((asana) => currentParentChildrenName === asana.english_name).map((asana) => (
+      return ASANAS.filter((asana) => currentParentChildrenName.includes(asana.english_name)).map((asana) => (
         <AsanaCard {...asana} key={asana.id}/>
       ));
     }
@@ -54,7 +60,7 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
   }
 
   function getAsanaCard(asana: Asana) {
-    const isAsanaInStep = Object.values(parents).includes(asana.english_name);
+    const isAsanaInStep = Object.values(trainingSteps).some(names => names.includes(asana.english_name));
     return isAsanaInStep ? null :  <AsanaCard {...asana}  key={asana.id} />
   }
 
@@ -65,7 +71,9 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
   }
 
   function onSaveClick() {
-    saveTraining({date: formatDate(trainingDate), steps: parents});
+    if (Object.keys(trainingSteps).length) {
+      saveTraining({date: formatDate(trainingDate), steps: trainingSteps});
+    }
   }
 
   return (

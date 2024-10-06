@@ -2,10 +2,17 @@
     display: flex;
     flex-direction: column;
     row-gap: 20px;
+    padding: 10px;
 }
 
 .dateInput {
-    width: 350px;
+    width: 250px;
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: inherit;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: border-color 0.25s;
 }
 
 .saveButton {
@@ -17,8 +24,7 @@
 .container {
     display: flex;
     gap: 10px;
-    /*TODO temp*/
-    flex-wrap: wrap;
+    align-items: center;
 }
 
 .asanasContainer {

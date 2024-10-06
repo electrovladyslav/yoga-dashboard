@@ -1,8 +1,8 @@
 import type { UniqueIdentifier } from '@dnd-kit/core';
 
 export interface TrainingSteps {
-  // Steps: Asana[];
-  [key: string]: UniqueIdentifier;
+  // Steps: AsanaName[];
+  [key: string]: UniqueIdentifier[];
 }
 
 export interface Training {

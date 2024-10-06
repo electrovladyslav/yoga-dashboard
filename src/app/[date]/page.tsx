@@ -1,11 +1,10 @@
 import { TrainingPage } from '@/components/pages/training-page/training-page'
 
 export default function Page({ params }: { params: { date: string } }) {
-    let trainingDate = new Date(params.date);
+    const urlDate = new Date(params.date);
+    const isUrlDateValid = !isNaN(urlDate.getTime());
 
-    if (isNaN(trainingDate.getTime())) {
-      trainingDate = new Date();
-    }
-
-    return <TrainingPage trainingDate={trainingDate} />
+  return isUrlDateValid ?
+    <TrainingPage trainingDate={urlDate} /> :
+    <TrainingPage />;
 }

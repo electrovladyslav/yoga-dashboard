@@ -1,4 +1,4 @@
-import styles from './training-plan.module.css';
+import styles from 'src/components/training-step/training-step.module.css';
 import {useDroppable} from '@dnd-kit/core';
 
 interface TrainingStepProps {
