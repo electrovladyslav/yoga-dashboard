@@ -7,6 +7,7 @@ export const AsanaCard = (asana: Asana) => {
   const {attributes, listeners, setNodeRef, transform} = useDraggable({
     id: `${asana.english_name}`,
   });
+
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
   } : undefined;
@@ -16,11 +17,11 @@ export const AsanaCard = (asana: Asana) => {
           <Image
             src={asana.url_svg}
             alt={asana.sanskrit_name}
-            width='80'
-            height='80'
+            width='50'
+            height='50'
           />
-          <h2 className={styles.title}>{asana.english_name}</h2>
-          <p className={styles.subtitle}>{asana.sanskrit_name}</p>
+          <h2 className={`${styles.title} line-clamp-2`}>{asana.english_name}</h2>
+          {/*<p className={`${styles.subtitle} line-clamp-1`}>{asana.sanskrit_name}</p>*/}
         </article>
   )
 }
