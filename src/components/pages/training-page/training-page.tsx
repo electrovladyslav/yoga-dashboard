@@ -35,10 +35,19 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
     const { active: draggingAsanaCard, over: overTrainingStep } = event;
 
     if (overTrainingStep) {
-      setTrainingSteps((prevTrainingSteps) => ({
-        ...prevTrainingSteps,
-        [overTrainingStep.id]:  [...(prevTrainingSteps[overTrainingStep.id] || []), draggingAsanaCard.id],
-      }));
+      setTrainingSteps((prevTrainingSteps) => {
+        const newTrainingSteps = {...prevTrainingSteps};
+        
+        // Remove asana from all previous steps
+        Object.keys(newTrainingSteps).forEach((step) => {
+          newTrainingSteps[step] = newTrainingSteps[step].filter((asana) => asana !== draggingAsanaCard.id);
+        });
+        
+        // Add asana to the target step
+        newTrainingSteps[overTrainingStep.id] = [...(newTrainingSteps[overTrainingStep.id] || []), draggingAsanaCard.id];
+        
+        return newTrainingSteps;
+      });
     } else {
       // remove from prev holding steps
       const newTrainingSteps = {...trainingSteps};
