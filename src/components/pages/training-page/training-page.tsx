@@ -2,6 +2,7 @@
 import { formatDate } from "@/utils/date.utils";
 import { TrainingStep } from '@/components/training-step/training-step';
 import { AsanaCard } from '@/components/asana-card/asana-card';
+import { Chat } from '@/components/chat/chat';
 import styles from './training-page.module.css';
 import { type Asana, ASANAS } from '@/constants/asana';
 import { STEPS } from '@/constants/steps';
@@ -108,6 +109,8 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
           {ASANAS.map(getAsanaCard)}
         </section>
       </main>
+      
+      <Chat onTrainingPlanGenerated={(plan) => console.log('Generated plan:', plan)} />
     </DndContext>
   )
 }
