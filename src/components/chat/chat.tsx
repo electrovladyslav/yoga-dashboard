@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { aiYogaService } from '@/services/ai-yoga.service';
+import type { TrainingSteps } from '@/models/training.model';
 import styles from './chat.module.css';
 
 interface Message {
@@ -8,13 +9,15 @@ interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  hasTrainingPlan?: boolean;
+  trainingSteps?: TrainingSteps;
 }
 
 interface ChatProps {
-  onTrainingPlanGenerated?: (plan: string) => void;
+  onTrainingPlanGenerated?: (trainingSteps: TrainingSteps) => void;
 }
 
-export const Chat = ({}: ChatProps) => {
+export const Chat = ({ onTrainingPlanGenerated }: ChatProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -36,15 +39,42 @@ export const Chat = ({}: ChatProps) => {
     scrollToBottom();
   }, [messages]);
 
-  const generateAIResponse = async (userMessage: string): Promise<string> => {
+  const generateAIResponse = async (userMessage: string): Promise<Message> => {
     // Simulate some processing time
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     try {
-      return await aiYogaService.generateResponse(userMessage);
+      const response = await aiYogaService.generateResponse(userMessage);
+      return {
+        id: (Date.now() + 1).toString(),
+        text: response.message,
+        isUser: false,
+        timestamp: new Date(),
+        hasTrainingPlan: response.hasTrainingPlan,
+        trainingSteps: response.trainingPlan?.trainingSteps
+      };
     } catch (error) {
       console.error('AI service error:', error);
-      return "I'm having trouble generating a response right now. Please try asking about your yoga practice again!";
+      return {
+        id: (Date.now() + 1).toString(),
+        text: "I'm having trouble generating a response right now. Please try asking about your yoga practice again!",
+        isUser: false,
+        timestamp: new Date()
+      };
+    }
+  };
+
+  const handleApplySequence = (trainingSteps: TrainingSteps) => {
+    if (onTrainingPlanGenerated) {
+      onTrainingPlanGenerated(trainingSteps);
+      // Add confirmation message
+      const confirmMessage: Message = {
+        id: Date.now().toString(),
+        text: "✅ Perfect! I've applied the yoga sequence to your training steps. You can now see the asanas in their respective phases and make any adjustments you'd like!",
+        isUser: false,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, confirmMessage]);
     }
   };
 
@@ -63,13 +93,7 @@ export const Chat = ({}: ChatProps) => {
     setIsLoading(true);
 
     try {
-      const aiResponse = await generateAIResponse(inputValue);
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: aiResponse,
-        isUser: false,
-        timestamp: new Date()
-      };
+      const aiMessage = await generateAIResponse(inputValue);
       setMessages(prev => [...prev, aiMessage]);
     } catch {
       const errorMessage: Message = {
@@ -114,6 +138,14 @@ export const Chat = ({}: ChatProps) => {
                 }`}
               >
                 <div className={styles.messageText}>{message.text}</div>
+                {message.hasTrainingPlan && message.trainingSteps && (
+                  <button
+                    onClick={() => handleApplySequence(message.trainingSteps!)}
+                    className={styles.applyButton}
+                  >
+                    ✨ Apply Sequence
+                  </button>
+                )}
                 <div className={styles.messageTime}>
                   {message.timestamp.toLocaleTimeString([], { 
                     hour: '2-digit', 

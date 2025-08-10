@@ -18,6 +18,7 @@ interface TrainingPageProps {
 export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProps) => {
   const [trainingSteps, setTrainingSteps] = useState<TrainingSteps>({});
   const [trainingDate, setTrainingDate] = useState(propsTrainingDate || new Date());
+  const [showAIAppliedNotification, setShowAIAppliedNotification] = useState(false);
 
   const setTrainingFromTheDate = useCallback((date: Date) => {
     const storedTrainings = getTrainings(formatDate(date));
@@ -86,6 +87,13 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
     }
   }
 
+  function handleAITrainingPlan(aiTrainingSteps: TrainingSteps) {
+    setTrainingSteps(aiTrainingSteps);
+    setShowAIAppliedNotification(true);
+    // Hide notification after 4 seconds
+    setTimeout(() => setShowAIAppliedNotification(false), 4000);
+  }
+
   return (
     <DndContext  onDragEnd={handleDragEnd}>
       <main className={styles.main}>
@@ -110,7 +118,13 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
         </section>
       </main>
       
-      <Chat onTrainingPlanGenerated={(plan) => console.log('Generated plan:', plan)} />
+      {showAIAppliedNotification && (
+        <div className={styles.aiNotification}>
+          ✨ AI yoga sequence applied successfully! Check your training steps.
+        </div>
+      )}
+      
+      <Chat onTrainingPlanGenerated={handleAITrainingPlan} />
     </DndContext>
   )
 }

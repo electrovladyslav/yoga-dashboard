@@ -16,6 +16,12 @@ interface YogaPlan {
   tips: string[];
 }
 
+interface AIResponse {
+  message: string;
+  hasTrainingPlan: boolean;
+  trainingPlan?: YogaPlan;
+}
+
 class AIYogaService {
   private parseUserMessage(message: string): YogaRequest | null {
     const lowerMessage = message.toLowerCase();
@@ -207,16 +213,30 @@ class AIYogaService {
     ].slice(0, 5);
   }
 
-  public async generateResponse(userMessage: string): Promise<string> {
+  public async generateResponse(userMessage: string): Promise<AIResponse> {
     const request = this.parseUserMessage(userMessage);
     
     if (!request) {
-      return "I'd love to help you with yoga! Please tell me about what kind of practice you're looking for. For example: 'I want a 30-minute beginner yoga sequence for flexibility' or 'Create an advanced strength-focused practice'.";
+      return {
+        message: "I'd love to help you with yoga! Please tell me about what kind of practice you're looking for. For example: 'I want a 30-minute beginner yoga sequence for flexibility' or 'Create an advanced strength-focused practice'.",
+        hasTrainingPlan: false
+      };
     }
 
     const plan = this.generateYogaPlan(request);
+    const message = `${plan.description}\n\n**Practice Tips:**\n${plan.tips.map(tip => `• ${tip}`).join('\n')}\n\n✨ **Would you like me to apply this sequence to your training steps?** Click "Apply Sequence" below to automatically add these asanas to your practice!`;
     
-    return `${plan.description}\n\n**Practice Tips:**\n${plan.tips.map(tip => `• ${tip}`).join('\n')}\n\nI've suggested asanas for each phase of your practice. You can drag them from the available poses below into your training steps!`;
+    return {
+      message,
+      hasTrainingPlan: true,
+      trainingPlan: plan
+    };
+  }
+
+  // Keep the old method for backward compatibility
+  public async generateResponseText(userMessage: string): Promise<string> {
+    const response = await this.generateResponse(userMessage);
+    return response.message;
   }
 
   public generateYogaPlan(request: YogaRequest): YogaPlan {
