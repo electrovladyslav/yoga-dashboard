@@ -2,6 +2,7 @@
 import { formatDate } from "@/utils/date.utils";
 import { TrainingStep } from '@/components/training-step/training-step';
 import { AsanaCard } from '@/components/asana-card/asana-card';
+import { Chat } from '@/components/chat/chat';
 import styles from './training-page.module.css';
 import { type Asana, ASANAS } from '@/constants/asana';
 import { STEPS } from '@/constants/steps';
@@ -17,6 +18,7 @@ interface TrainingPageProps {
 export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProps) => {
   const [trainingSteps, setTrainingSteps] = useState<TrainingSteps>({});
   const [trainingDate, setTrainingDate] = useState(propsTrainingDate || new Date());
+  const [showAIAppliedNotification, setShowAIAppliedNotification] = useState(false);
 
   const setTrainingFromTheDate = useCallback((date: Date) => {
     const storedTrainings = getTrainings(formatDate(date));
@@ -35,10 +37,19 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
     const { active: draggingAsanaCard, over: overTrainingStep } = event;
 
     if (overTrainingStep) {
-      setTrainingSteps((prevTrainingSteps) => ({
-        ...prevTrainingSteps,
-        [overTrainingStep.id]:  [...(prevTrainingSteps[overTrainingStep.id] || []), draggingAsanaCard.id],
-      }));
+      setTrainingSteps((prevTrainingSteps) => {
+        const newTrainingSteps = {...prevTrainingSteps};
+        
+        // Remove asana from all previous steps
+        Object.keys(newTrainingSteps).forEach((step) => {
+          newTrainingSteps[step] = newTrainingSteps[step].filter((asana) => asana !== draggingAsanaCard.id);
+        });
+        
+        // Add asana to the target step
+        newTrainingSteps[overTrainingStep.id] = [...(newTrainingSteps[overTrainingStep.id] || []), draggingAsanaCard.id];
+        
+        return newTrainingSteps;
+      });
     } else {
       // remove from prev holding steps
       const newTrainingSteps = {...trainingSteps};
@@ -76,6 +87,13 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
     }
   }
 
+  function handleAITrainingPlan(aiTrainingSteps: TrainingSteps) {
+    setTrainingSteps(aiTrainingSteps);
+    setShowAIAppliedNotification(true);
+    // Hide notification after 4 seconds
+    setTimeout(() => setShowAIAppliedNotification(false), 4000);
+  }
+
   return (
     <DndContext  onDragEnd={handleDragEnd}>
       <main className={styles.main}>
@@ -99,6 +117,14 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
           {ASANAS.map(getAsanaCard)}
         </section>
       </main>
+      
+      {showAIAppliedNotification && (
+        <div className={styles.aiNotification}>
+          ✨ AI yoga sequence applied successfully! Check your training steps.
+        </div>
+      )}
+      
+      <Chat onTrainingPlanGenerated={handleAITrainingPlan} />
     </DndContext>
   )
 }
