@@ -1,4 +1,4 @@
-import type { Training } from '@/models/training.model';
+import { Training } from '@/models/training.model';
 
 export const saveTraining = (training: Training): void  => {
   localSaveTraining(training);

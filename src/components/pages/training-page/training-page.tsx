@@ -98,11 +98,11 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
     <DndContext  onDragEnd={handleDragEnd}>
       <main className={styles.main}>
 
-        <h1>
-          <span>Training </span>
+        <header className={styles.header}>
+          <h1 className={styles.headerTitle}>Training</h1>
           <input type="date" value={formatDate(trainingDate)} onChange={onDateChange} className={styles.dateInput}/>
           <button className={styles.saveButton} onClick={onSaveClick}>Save</button>
-        </h1>
+        </header>
 
         <section className={styles.container}>
           {STEPS.map((step) => (
@@ -113,8 +113,11 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
         </section>
 
 
-        <section className={`${styles.asanasContainer} ${styles.container}`}>
-          {ASANAS.map(getAsanaCard)}
+        <section className={styles.library}>
+          <h2 className={styles.sectionLabel}>Asana library</h2>
+          <div className={styles.asanasContainer}>
+            {ASANAS.map(getAsanaCard)}
+          </div>
         </section>
       </main>
       
