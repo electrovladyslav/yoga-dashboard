@@ -14,14 +14,15 @@ export const AsanaCard = (asana: Asana) => {
 
   return (
         <article className={styles.card} ref={setNodeRef} style={style} {...listeners} {...attributes}>
-          <Image
-            src={asana.url_svg}
-            alt={asana.sanskrit_name}
-            width='50'
-            height='50'
-          />
-          <h2 className={`${styles.title} line-clamp-2`}>{asana.english_name}</h2>
-          {/*<p className={`${styles.subtitle} line-clamp-1`}>{asana.sanskrit_name}</p>*/}
+          <div className={styles.iconCircle}>
+            <Image
+              src={asana.url_svg}
+              alt={asana.sanskrit_name}
+              width='50'
+              height='50'
+            />
+          </div>
+          <h2 className={styles.title} title={asana.english_name}>{asana.english_name}</h2>
         </article>
   )
 }
