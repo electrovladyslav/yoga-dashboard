@@ -55,3 +55,19 @@
     text-align: center;
     font-style: italic;
 }
+
+@media (max-width: 640px) {
+    .card {
+        min-height: 120px;
+        padding: var(--space-2);
+    }
+
+    .iconCircle {
+        width: 52px;
+        height: 52px;
+    }
+
+    .title {
+        font-size: 0.78em;
+    }
+}
