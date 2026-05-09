@@ -6,7 +6,7 @@ import { Chat } from '@/components/chat/chat';
 import styles from './training-page.module.css';
 import { type Asana, ASANAS } from '@/constants/asana';
 import { STEPS } from '@/constants/steps';
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { type ChangeEvent, useCallback, useEffect, useState } from 'react';
 import type { TrainingSteps } from '@/models/training.model';
 import { getTrainings, saveTraining } from '@/services/training.service';
@@ -19,6 +19,12 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
   const [trainingSteps, setTrainingSteps] = useState<TrainingSteps>({});
   const [trainingDate, setTrainingDate] = useState(propsTrainingDate || new Date());
   const [showAIAppliedNotification, setShowAIAppliedNotification] = useState(false);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+  );
 
   const setTrainingFromTheDate = useCallback((date: Date) => {
     const storedTrainings = getTrainings(formatDate(date));
@@ -33,7 +39,12 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
     }
   }, [propsTrainingDate, setTrainingFromTheDate]);
 
+  function handleDragStart({ active }: DragStartEvent) {
+    setActiveDragId(active.id as string);
+  }
+
   function handleDragEnd(event: DragEndEvent) {
+    setActiveDragId(null);
     const { active: draggingAsanaCard, over: overTrainingStep } = event;
 
     if (overTrainingStep) {
@@ -95,7 +106,7 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
   }
 
   return (
-    <DndContext  onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <main className={styles.main}>
 
         <header className={styles.header}>
@@ -126,8 +137,14 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
           ✨ AI yoga sequence applied successfully! Check your training steps.
         </div>
       )}
-      
+
       <Chat onTrainingPlanGenerated={handleAITrainingPlan} />
+
+      <DragOverlay>
+        {activeDragId ? (
+          <AsanaCard {...ASANAS.find(a => a.english_name === activeDragId)!} overlay />
+        ) : null}
+      </DragOverlay>
     </DndContext>
   )
 }
