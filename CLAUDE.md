@@ -7,10 +7,12 @@ This is a yoga dashboard application built with Next.js 14 that allows users to 
 
 ## Development Commands
 - `npm run dev` - Start development server
-- `npm run build` - Build for production  
+- `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 - `npm run migrate` - Run asana migration script using ts-node
+- `npm test` - Run Vitest once (CI-style)
+- `npm run test:watch` - Run Vitest in watch mode
 
 ## Architecture & Key Components
 
@@ -52,5 +54,66 @@ Uses `@/*` alias pointing to `src/*` directory for cleaner imports.
 ### Environment Variables
 Requires `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` for Supabase integration.
 
-## Development Workflow
-- Before every changes propose plan for it, structured in checkboxes list
+## Engineering Discipline (OpenSpec + Superpowers)
+
+### Planning routing
+For any new feature or non-trivial change, the planning entry point is
+`/opsx:propose`. Skip Superpowers' `brainstorming` and `writing-plans` skills
+by default — OpenSpec's `proposal.md`, `design.md`, and `tasks.md` replace them.
+
+Exception: if the change is UI-heavy (new page, drag-and-drop interaction,
+asana flow redesign) and the design is unclear, you MAY run
+`/superpowers:brainstorming` first with Visual Companion for HTML mockups,
+then feed the resulting design spec into `/opsx:propose`.
+
+Never produce both a Superpowers `docs/superpowers/specs/...-design.md` AND
+an OpenSpec `openspec/changes/<id>/design.md` for the same feature.
+
+### Implementation discipline (during `/opsx:apply`)
+When using `/opsx:apply`, ALWAYS apply these Superpowers skills:
+
+1. **using-git-worktrees**: Create an isolated git worktree for each
+   OpenSpec change before any file edits. Never modify `main` directly.
+
+2. **test-driven-development**: Strictly follow RED-GREEN-REFACTOR.
+   Write a failing test FIRST, then minimum code to pass it, then refactor.
+   Never write implementation before the test exists.
+   - Unit/component tests: place next to the file as `<name>.test.ts(x)`
+   - Service-layer tests: cover both `ok` and `error` branches of Result types
+   - Component tests: assert on user-visible behavior, not implementation
+
+3. **verification-before-completion**: Before marking any task complete, run:
+   - `npm run lint` — must pass with zero warnings
+   - `npx tsc --noEmit` — must pass with zero errors
+   - `npm test` — must pass (when tests exist for the changed area)
+
+   Do not claim "done" until all three are green.
+
+4. **code-reviewer**: After each batch of 3-5 tasks, invoke the
+   code-reviewer agent. Address all CRITICAL and HIGH findings before
+   continuing. Document MEDIUM/LOW for follow-up in the change folder.
+
+### Debugging
+When tests fail, builds break, or behavior is unexpected, use
+**systematic-debugging**: investigate root cause across the 4 phases
+before applying any fix. No guess-fixes, no "let me try this and see".
+
+### Archival
+After deploy and manual sanity check, ALWAYS run `/opsx:archive` as the
+last action of the change. Never start the next `/opsx:propose` with an
+unarchived previous change still open.
+
+### Project-specific gotchas (update as we learn)
+- localStorage shape changes are breaking — bump a version key and
+  add a migration in `src/services/` rather than silently overwriting.
+- Drag-and-drop state lives in `TrainingPage`; never duplicate it into
+  `TrainingStep` or `AsanaCard`.
+- Supabase keys are public-anon only — never put service-role keys in
+  `NEXT_PUBLIC_*` envs.
+
+## Note on AGENTS.md
+Code style, naming conventions, error handling patterns, and the Result
+type are defined in `AGENTS.md`. This file (`CLAUDE.md`) covers project
+architecture and engineering process. Both files are loaded together;
+when they conflict, `CLAUDE.md` wins for process and `AGENTS.md` wins
+for code style.
