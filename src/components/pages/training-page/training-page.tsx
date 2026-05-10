@@ -9,7 +9,7 @@ import { STEPS } from '@/constants/steps';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { type ChangeEvent, useCallback, useEffect, useState } from 'react';
 import type { TrainingSteps } from '@/models/training.model';
-import { getTrainings, saveTraining } from '@/services/training.service';
+import { getTraining, saveTraining, migrateFromLocalStorage } from '@/services/training.service';
 
 interface TrainingPageProps {
   trainingDate?: Date;
@@ -20,16 +20,29 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
   const [trainingDate, setTrainingDate] = useState(propsTrainingDate || new Date());
   const [showAIAppliedNotification, setShowAIAppliedNotification] = useState(false);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [storageError, setStorageError] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   );
 
-  const setTrainingFromTheDate = useCallback((date: Date) => {
-    const storedTrainings = getTrainings(formatDate(date));
-    if (storedTrainings) {
-      setTrainingSteps(storedTrainings.steps);
+  useEffect(() => {
+    migrateFromLocalStorage();
+  }, []);
+
+  const setTrainingFromTheDate = useCallback(async (date: Date) => {
+    setIsLoading(true);
+    setStorageError(null);
+    const result = await getTraining(formatDate(date));
+    setIsLoading(false);
+    if (!result.ok) {
+      setStorageError('Failed to load training data. Please try again.');
+      return;
+    }
+    if (result.value) {
+      setTrainingSteps(result.value.steps);
     }
   }, []);
 
@@ -50,19 +63,16 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
     if (overTrainingStep) {
       setTrainingSteps((prevTrainingSteps) => {
         const newTrainingSteps = {...prevTrainingSteps};
-        
-        // Remove asana from all previous steps
+
         Object.keys(newTrainingSteps).forEach((step) => {
           newTrainingSteps[step] = newTrainingSteps[step].filter((asana) => asana !== draggingAsanaCard.id);
         });
-        
-        // Add asana to the target step
+
         newTrainingSteps[overTrainingStep.id] = [...(newTrainingSteps[overTrainingStep.id] || []), draggingAsanaCard.id];
-        
+
         return newTrainingSteps;
       });
     } else {
-      // remove from prev holding steps
       const newTrainingSteps = {...trainingSteps};
       Object.keys(newTrainingSteps).forEach((step) => {
         newTrainingSteps[step] = newTrainingSteps[step].filter((asana) => asana !== draggingAsanaCard.id);
@@ -92,16 +102,19 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
     setTrainingDate(date);
   }
 
-  function onSaveClick() {
+  async function onSaveClick() {
     if (Object.keys(trainingSteps).length) {
-      saveTraining({date: formatDate(trainingDate), steps: trainingSteps});
+      setStorageError(null);
+      const result = await saveTraining({date: formatDate(trainingDate), steps: trainingSteps});
+      if (!result.ok) {
+        setStorageError('Failed to save training. Please try again.');
+      }
     }
   }
 
   function handleAITrainingPlan(aiTrainingSteps: TrainingSteps) {
     setTrainingSteps(aiTrainingSteps);
     setShowAIAppliedNotification(true);
-    // Hide notification after 4 seconds
     setTimeout(() => setShowAIAppliedNotification(false), 4000);
   }
 
@@ -112,17 +125,24 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
         <header className={styles.header}>
           <h1 className={styles.headerTitle}>Training</h1>
           <input type="date" value={formatDate(trainingDate)} onChange={onDateChange} className={styles.dateInput}/>
-          <button className={styles.saveButton} onClick={onSaveClick}>Save</button>
+          <button className={styles.saveButton} onClick={onSaveClick} disabled={isLoading}>Save</button>
         </header>
 
-        <section className={styles.container}>
-          {STEPS.map((step) => (
-            <TrainingStep step={step}  key={step}>
-              {getDraggableChildren(step)}
-            </TrainingStep>
-          ))}
-        </section>
+        {storageError && (
+          <div role="alert" className={styles.errorBanner}>{storageError}</div>
+        )}
 
+        {isLoading ? (
+          <div className={styles.loadingIndicator}>Loading…</div>
+        ) : (
+          <section className={styles.container}>
+            {STEPS.map((step) => (
+              <TrainingStep step={step} key={step}>
+                {getDraggableChildren(step)}
+              </TrainingStep>
+            ))}
+          </section>
+        )}
 
         <section className={styles.library}>
           <h2 className={styles.sectionLabel}>Asana library</h2>
@@ -131,7 +151,7 @@ export const TrainingPage = ({trainingDate: propsTrainingDate}: TrainingPageProp
           </div>
         </section>
       </main>
-      
+
       {showAIAppliedNotification && (
         <div className={styles.aiNotification}>
           ✨ AI yoga sequence applied successfully! Check your training steps.
