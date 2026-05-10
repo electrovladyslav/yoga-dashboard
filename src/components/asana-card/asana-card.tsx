@@ -3,17 +3,24 @@ import type { Asana } from '@/constants/asana.ts';
 import {useDraggable} from '@dnd-kit/core';
 import Image from 'next/image';
 
-export const AsanaCard = (asana: Asana) => {
-  const {attributes, listeners, setNodeRef, transform} = useDraggable({
+type AsanaCardProps = Asana & { overlay?: boolean };
+
+export const AsanaCard = ({ overlay, ...asana }: AsanaCardProps) => {
+  const {attributes, listeners, setNodeRef, isDragging} = useDraggable({
     id: `${asana.english_name}`,
+    disabled: overlay,
   });
 
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
+  const style = isDragging && !overlay ? { opacity: 0 } : undefined;
 
   return (
-        <article className={styles.card} ref={setNodeRef} style={style} {...listeners} {...attributes}>
+        <article
+          className={styles.card}
+          ref={overlay ? undefined : setNodeRef}
+          style={style}
+          {...(overlay ? {} : listeners)}
+          {...(overlay ? {} : attributes)}
+        >
           <div className={styles.iconCircle}>
             <Image
               src={asana.url_svg}
