@@ -1,0 +1,74 @@
+schema: spec-driven
+
+context: |
+  ## Project
+  Yoga Dashboard — a Next.js 14 App Router application for creating and managing
+  yoga training sequences via drag-and-drop.
+
+  ## Tech Stack
+  - Framework: Next.js 14 (App Router, TypeScript strict mode)
+  - Language: TypeScript 5
+  - Styling: Tailwind CSS 3 + CSS Modules per component
+  - Drag & Drop: @dnd-kit/core
+  - Testing: Vitest + @testing-library/react + jsdom
+  - Linting: ESLint (next/core-web-vitals config)
+  - Backend/DB: Supabase (public-anon key only; service-role keys are never
+    placed in NEXT_PUBLIC_* envs)
+  - Persistence: localStorage (versioned — bump a version key and add a
+    migration in src/services/ for any shape change)
+
+  ## Repository Layout
+  src/
+    app/           — Next.js pages and API routes
+    components/    — Feature-scoped React components (CSS module per component)
+    constants/     — Static data: asana definitions, training-step names
+    models/        — TypeScript interfaces and type definitions
+    services/      — Business logic and localStorage persistence
+    lib/           — Supabase client config
+    utils/         — Pure utility functions
+
+  ## Domain Concepts
+  - Asana: a yoga pose with English/Sanskrit names, description, benefits, image
+  - Training: date-keyed record with steps → asana-identifier arrays
+  - TrainingSteps: { setup, warm-up, workout, cool-down, stretching, shavasanah }
+  - Drag-and-drop state lives exclusively in TrainingPage; never duplicated in
+    TrainingStep or AsanaCard
+
+  ## Code Style & Conventions
+  - Files: kebab-case  |  Variables/functions: camelCase
+  - Types/interfaces/classes: PascalCase  |  Constants/enum values: ALL_CAPS
+  - Generic type params: T-prefix (TKey, TValue)
+  - Prefer `import type` for type-only imports
+  - No new enums — use `as const` objects instead
+  - Error handling: Result<T, E> pattern (ok/error) instead of throwing
+  - Avoid `any` except in generic functions where inference fails
+  - JSDoc only when behavior is non-obvious; be concise
+  - No explanatory comments; name identifiers well instead
+
+  ## Commit Convention
+  Conventional commits: feat / fix / refactor / test / chore / docs
+
+  ## Engineering Process
+  - Planning entry point: /opsx:propose
+  - Implementation: /opsx:apply — always in a git worktree, TDD (RED-GREEN-REFACTOR)
+  - Verification before completing any task:
+      npm run lint   (zero warnings)
+      npx tsc --noEmit  (zero errors)
+      npm test       (all pass)
+  - Code review after every 3-5 tasks; CRITICAL/HIGH findings block progress
+  - Archive with /opsx:archive after deploy + sanity check
+
+rules:
+  proposal:
+    - State the problem and motivation in ≤ 3 sentences before any solution
+    - Include a "Non-goals" section to bound scope
+    - List affected files/directories when known
+  design:
+    - Reference existing src/models/ types; introduce new types only when necessary
+    - Call out localStorage migration needs explicitly if data shape changes
+    - Note any Supabase interactions and confirm public-anon key is sufficient
+  tasks:
+    - Each task must be completable in ≤ 2 hours; split larger tasks
+    - Every task that touches src/ must include a corresponding test task
+    - Order tasks so tests are written before implementation (TDD)
+    - Verification (lint + tsc + test) is the final task of every change
