@@ -73,6 +73,20 @@
     align-items: stretch;
 }
 
+.errorBanner {
+    padding: 10px 16px;
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: var(--radius-md);
+    font-size: 0.9em;
+}
+
+.loadingIndicator {
+    padding: var(--space-6);
+    text-align: center;
+    color: var(--color-text-muted, #6b7280);
+}
+
 .aiNotification {
     position: fixed;
     top: 20px;
